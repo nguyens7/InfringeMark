@@ -10,24 +10,33 @@ library(data.table)
 ```
 
 ```{r}
-files <- list.files(pattern = "*.csv")
+files <- list.files(pattern = "Data.nosync/*.csv")
 
 files %>% 
 map(~read.csv(.x, nrows = 100))
 ```
 
 ```{r}
-Cleaned_df <- read_csv("Trademarks_only.csv") %>% 
+Cleaned_df <- read_csv("Data.nosync/Trademarks_only.csv") %>% 
   filter(str_detect(statement_text,"\"*\"")) %>% 
   mutate(wordmark = str_extract(statement_text, "\"(.*?)\""),
-         clean_wordmark = str_remove_all(wordmark, "\"|\\.|,")) 
+         clean_wordmark = str_remove_all(wordmark, "\"|\\.|,"),
+         wordmark_only = str_remove_all(clean_wordmark,"[[:punct:]]") %>%
+           str_to_lower()
+         ) 
 
 Cleaned_df
 ```
 
 
 ```{r}
-Cleaned_df %>% 
+TM_clean <- Cleaned_df %>%
+  select(wordmark = wordmark_only, serial_no)
+
+TM_clean 
+
+
+# write_csv(TM_clean, "Data.nosync/TM_clean.csv")
   
 ```
 

@@ -10,6 +10,8 @@ import streamlit as st
 import spacy
 import spacy_streamlit 
 from spacy_streamlit import visualize_textcat
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 
 
 
@@ -39,11 +41,11 @@ yr_range = add_slider = st.sidebar.slider(
 
 nlp = spacy.load("en_core_web_lg")
 raw_text = st.text_area("Trademark Search","Trademark that you want to check")
-tokens = nlp(raw_text)
+clean_text = str.lower(raw_text)
+tokens = nlp(clean_text)
 
 if st.button("Tokenize"):
 	spacy_streamlit.visualize_tokens(tokens)
-
 
 # for token1 in tokens:
 #     for token2 in tokens:
@@ -53,6 +55,17 @@ if st.button("Tokenize"):
 # For a trained classifier
 # elif st.button("Classify"):
 # 	spacy_streamlit.visualize_textcat(tokens)
+
+# Import pandas df of TMs
+	df = pd.read_csv("Data.nosync/TM_clean.csv",nrows = 10000, index_col = False)
+
+	possibilities = process.extract(clean_text, df, limit=10, scorer=fuzz.token_sort_ratio)	
+
+	# st.write(possibilities)
+	# df2 = df.head(200)
+
+	st.dataframe(possibilities)
+
 
 
 
