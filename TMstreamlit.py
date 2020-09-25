@@ -49,10 +49,10 @@ def main():
 		if st.button("Find Similar Trademarks"):
 
 			# spaCy tokens
-			# spacy_streamlit.visualize_tokens(tokens)
+			spacy_streamlit.visualize_tokens(tokens)
 
 			# Import TM data
-			df = pd.read_csv("Data.nosync/TM_clean.csv",nrows = 1e6, index_col = False)
+			df = pd.read_csv("Data.nosync/TM_clean.csv", index_col = False) # nrows = 1e6
 
 			df_matches = df[df.apply(get_ratio, axis=1) > 70]
 
