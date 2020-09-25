@@ -44,11 +44,25 @@ def main():
 		clean_text = str.lower(raw_text)
 		tokens = nlp(clean_text)
 		if st.button("Uniquness Calculator"):
-			spacy_streamlit.visualize_tokens(tokens)
-			df = pd.read_csv("Data.nosync/TM_clean.csv",nrows = 10000, index_col = False)
+
+			# spaCy tokens
+			# spacy_streamlit.visualize_tokens(tokens)
+
+			# Import TM data
+			df = pd.read_csv("Data.nosync/TM_clean.csv",nrows = 1e6, index_col = False)
+
 			df_matches = df[df.apply(get_ratio, axis=1) > 70]
+
+			df_matches['sim_score']= df.apply(get_ratio, axis=1)
+			df_matches = df_matches.sort_values(by='sim_score', ascending=False)
+
 			st.dataframe(df_matches)
 
+	elif choice == "Similarity":
+		st.write("That feature hasn't been implemented yet.")
+
+	elif choice == "Phoneme":	
+		st.write("That feature hasn't been implemented yet.")
 
 if __name__ == '__main__':
 	main()
