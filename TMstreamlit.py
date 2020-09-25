@@ -43,7 +43,7 @@ def main():
 		raw_text = st.text_area("Trademark Search","Enter your trademark here")
 		clean_text = str.lower(raw_text)
 		tokens = nlp(clean_text)
-		if st.button("Uniquness Calculator"):
+		if st.button("Find Similar Trademarks"):
 
 			# spaCy tokens
 			# spacy_streamlit.visualize_tokens(tokens)
@@ -57,6 +57,12 @@ def main():
 			df_matches = df_matches.sort_values(by='sim_score', ascending=False)
 
 			st.dataframe(df_matches)
+			if df_matches.shape[0] > 10:
+				st.write("InfringeMark recommends to NOT FILE for a trademark.\n There are over ", df_matches.shape[0]-1, "similar trademarks." )
+
+			elif df_matches.shape[0] > 10:
+				st.write("InfringeMark recommends to FILE for a trademark.\n There are under 10 similar trademarks.")
+
 
 	elif choice == "Similarity":
 		st.write("That feature hasn't been implemented yet.")
