@@ -15,7 +15,7 @@ def main():
 	""""A NLP app to identify infringing trademarks using spaCy"""
 
 	st.write("""
-	# Infringemark app  
+	# InfringeMark app  
 	A web application to identify potential infringing trademarks""")
 
 
@@ -35,12 +35,15 @@ def main():
 	    name = row['wordmark']
 	    return fuzz.token_sort_ratio(name, clean_text)
 
+	def make_clickable(val):
+    		return '<a href="{}">{}</a>'.format(val,val)
+
 	menu = ["Levenshtein", "Similarity", "Phoneme"]
 	choice = st.sidebar.selectbox("How do you want your trademark to be evaluated", menu)
 
 	if choice == "Levenshtein":
 		nlp = spacy.load("en_core_web_lg")
-		raw_text = st.text_area("Trademark Search","Enter your trademark here")
+		raw_text = st.text_area("","Enter your trademark here")
 		clean_text = str.lower(raw_text)
 		tokens = nlp(clean_text)
 		if st.button("Find Similar Trademarks"):
@@ -53,15 +56,22 @@ def main():
 
 			df_matches = df[df.apply(get_ratio, axis=1) > 70]
 
-			df_matches['sim_score']= df.apply(get_ratio, axis=1)
+			df_matches['sim_score'] = df.apply(get_ratio, axis=1)
 			df_matches = df_matches.sort_values(by='sim_score', ascending=False)
 
+			# Add urls
+			# df_matches['url'] = df_matches['serial_no'].apply(lambda x: f'https://tsdr.uspto.gov/#caseNumber={x}&caseSearchType=US_APPLICATION&caseType=DEFAULT&searchType=statusSearch')
+
+			# df.matches = df_matches.style.format(make_clickable)
+
+			# Return df
 			st.dataframe(df_matches)
+
 			if df_matches.shape[0] > 10:
 				st.write("InfringeMark recommends to NOT FILE for a trademark.\n There are over ", df_matches.shape[0]-1, "similar trademarks." )
 
-			elif df_matches.shape[0] > 10:
-				st.write("InfringeMark recommends to FILE for a trademark.\n There are under 10 similar trademarks.")
+			elif df_matches.shape[0] < 10:
+				st.write("InfringeMark recommends to FILE for a trademark.\n There are less than 10 similar trademarks.")
 
 
 	elif choice == "Similarity":
