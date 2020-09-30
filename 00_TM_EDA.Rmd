@@ -6,14 +6,14 @@ output: html_notebook
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(data.table)
-
+library(xml2)
+library(rvest)
 ```
 
 ```{r}
 files <- list.files("Data.nosync/", pattern = "*?\\.csv") %>% 
   here::here() %>% 
   as.list()
-
 
 files %>% 
 map(~read.csv(.x, nrows = 100))
@@ -42,4 +42,34 @@ TM_clean
   
 ```
 
+```{r}
+Courtcase_TM <- read_xml("Data.nosync/USPTO_TTAB_decisions.xml") %>% 
+  xml_find_all("//mark-text") %>% 
+  xml_text() %>% 
+  trimws() %>%
+  as_tibble() %>% 
+  distinct() %>% 
+  mutate(wordmark = str_replace_all(value, "[[:punct:]]", ""),
+                 wordmark = str_to_lower(wordmark))
+
+Courtcase_TM
+
+# Courtcase_TM  %>% 
+#   write_csv("Data.nosync/wordmark_cases.csv")
+```
+
+```{r}
+TM_XML <- "USPTO_TTAB_decisions.xml"
+
+TM_XML <- read_xml(TM_XML)
+
+Court_case_TM <- TM_XML %>% 
+  xml_find_all('//property') %>% 
+    map_dfr(~flatten(c(xml_attrs(.x), 
+                       map(xml_children(.x), 
+                           ~set_names(as.list(xml_text(.x)), xml_name(.x)))))) %>%
+    type_convert()
+
+Court_case_TM 
+```
 
