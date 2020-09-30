@@ -58,6 +58,8 @@ Courtcase_TM
 #   write_csv("Data.nosync/wordmark_cases.csv")
 ```
 
+
+## Extracting Court Case XML
 ```{r}
 TM_XML <- "USPTO_TTAB_decisions.xml"
 
@@ -71,5 +73,35 @@ Court_case_TM <- TM_XML %>%
     type_convert()
 
 Court_case_TM 
+```
+
+
+## Cleaning wordmarks
+```{r}
+TMs <- read_csv("Data.nosync/Courtcase_TM.csv")
+
+Wordmark_court_clean <- TMs %>% 
+  janitor::clean_names() %>% 
+  filter(!is.na(mark_text)) %>% 
+  mutate(mark_text = str_remove_all(mark_text, "[[:punct:]]"),
+         mark_text = str_to_lower(mark_text))
+
+Wordmark_court_clean
+```
+## Court case info
+```{r}
+TM_casefiles <- read_csv("Data.nosync/Semi_parsed_TM_courtcases.csv") %>% 
+  janitor::clean_names()
+
+
+TM_casefiles %>% 
+  count(type_code)
+```
+## Opposition cases
+```{r}
+TM_opposition_casefiles <- TM_casefiles %>% 
+  filter(type_code == "OPP")
+
+TM_opposition_casefiles
 ```
 
