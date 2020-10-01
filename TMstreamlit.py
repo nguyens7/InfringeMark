@@ -54,10 +54,10 @@ def main():
 			# Import TM data
 			df = pd.read_csv("Data.nosync/TM_clean.csv", index_col = False) # nrows = 1e6
 
-			df_matches = df[df.apply(get_ratio, axis=1) > 70]
+			df_matches = df[df.apply(get_ratio, axis = 1) > 70]
 
 			df_matches['sim_score'] = df.apply(get_ratio, axis=1)
-			df_matches = df_matches.sort_values(by='sim_score', ascending=False)
+			df_matches = df_matches.sort_values(by = 'sim_score', ascending = False)
 
 			# Add urls
 			# df_matches['url'] = df_matches['serial_no'].apply(lambda x: f'https://tsdr.uspto.gov/#caseNumber={x}&caseSearchType=US_APPLICATION&caseType=DEFAULT&searchType=statusSearch')

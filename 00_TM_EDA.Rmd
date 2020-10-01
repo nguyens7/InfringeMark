@@ -11,9 +11,10 @@ library(rvest)
 ```
 
 ```{r}
-files <- list.files("Data.nosync/", pattern = "*?\\.csv") %>% 
-  here::here() %>% 
-  as.list()
+files <- paste0(here::here(),"/",list.files("Data.nosync",
+                                        pattern = "*?\\.csv",
+                                        full.names = TRUE)) %>% 
+          as.list()
 
 files %>% 
 map(~read.csv(.x, nrows = 100))
