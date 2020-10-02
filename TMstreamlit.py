@@ -8,6 +8,8 @@ import spacy_streamlit
 from spacy_streamlit import visualize_textcat
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
+# from rapidfuzz import fuzz
+# from rapidfuzz import process
 
 
 
@@ -52,12 +54,13 @@ def main():
 			spacy_streamlit.visualize_tokens(tokens)
 
 			# Import TM data
-			df = pd.read_csv("Data.nosync/TM_clean.csv", index_col = False) # nrows = 1e6
+			df = pd.read_csv("Data.nosync/TM_clean_soundex.csv", index_col = False) # nrows = 1e6
 
 			df_matches = df[df.apply(get_ratio, axis = 1) > 70]
-
-			df_matches['sim_score'] = df.apply(get_ratio, axis=1)
+			df_matches['sim_score'] = df.apply(get_ratio, axis = 1)
 			df_matches = df_matches.sort_values(by = 'sim_score', ascending = False)
+
+
 
 			# Add urls
 			# df_matches['url'] = df_matches['serial_no'].apply(lambda x: f'https://tsdr.uspto.gov/#caseNumber={x}&caseSearchType=US_APPLICATION&caseType=DEFAULT&searchType=statusSearch')

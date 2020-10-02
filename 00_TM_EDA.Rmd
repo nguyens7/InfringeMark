@@ -62,7 +62,7 @@ Courtcase_TM
 
 ## Extracting Court Case XML
 ```{r}
-TM_XML <- "USPTO_TTAB_decisions.xml"
+TM_XML <- "Data.nosync/USPTO_TTAB_decisions.xml"
 
 TM_XML <- read_xml(TM_XML)
 
@@ -74,6 +74,20 @@ Court_case_TM <- TM_XML %>%
     type_convert()
 
 Court_case_TM 
+```
+
+
+```{r}
+data <- "Data.nosync/USPTO_TTAB_decisions.xml"
+
+Proceeding_Court_case_TM <- TM_XML  %>% 
+  xml_find_all('//proceeding-entry') %>% 
+    map_dfr(~flatten(c(xml_attrs(.x), 
+                       map(xml_children(.x), 
+                           ~set_names(as.list(xml_text(.x)), xml_name(.x)))))) %>%
+    type_convert()
+
+Proceeding_Court_case_TM 
 ```
 
 
@@ -89,14 +103,32 @@ Wordmark_court_clean <- TMs %>%
 
 Wordmark_court_clean
 ```
+
+
+```{r}
+combined_courtcase_TM <- Proceeding_Court_case_TM %>%
+  janitor::clean_names() %>%
+  filter(!is.na(party_information)) %>%
+  mutate(identifier = str_extract(party_information, "^[^\\d]*(\\d+)") %>% as.numeric()) %>% 
+  inner_join(Wordmark_court_clean, by = "identifier")
+
+combined_courtcase_TM 
+```
+
 ## Court case info
 ```{r}
-TM_casefiles <- read_csv("Data.nosync/Semi_parsed_TM_courtcases.csv") %>% 
-  janitor::clean_names()
+TM_casefiles <- read_csv("Data.nosync/combined_courtcase_TM.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(!is.na(mark_text))
 
 
 TM_casefiles %>% 
   count(type_code)
+
+
+
+TM_casefiles %>% 
+  filter(type_code %in% c("CAN"))
 ```
 ## Opposition cases
 ```{r}
@@ -104,5 +136,12 @@ TM_opposition_casefiles <- TM_casefiles %>%
   filter(type_code == "OPP")
 
 TM_opposition_casefiles
+```
+```{r}
+TM_clean <- read_csv("Data.nosync/TM_clean_soundex.csv") %>% 
+  select(-wordmark2)
+
+TM_clean %>% 
+  write_csv("Data.nosync/TM_clean_soundex.csv")
 ```
 
