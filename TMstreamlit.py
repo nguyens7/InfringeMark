@@ -3,9 +3,11 @@ import pandas as pd
 import streamlit as st
 
 # NLP Pkgs
+import jellyfish
 import spacy
 import spacy_streamlit 
 from spacy_streamlit import visualize_textcat
+
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 # from rapidfuzz import fuzz
@@ -55,12 +57,9 @@ def main():
 
 			# Import TM data
 			df = pd.read_csv("Data.nosync/TM_clean_soundex.csv", index_col = False) # nrows = 1e6
-
 			df_matches = df[df.apply(get_ratio, axis = 1) > 70]
 			df_matches['sim_score'] = df.apply(get_ratio, axis = 1)
 			df_matches = df_matches.sort_values(by = 'sim_score', ascending = False)
-
-
 
 			# Add urls
 			# df_matches['url'] = df_matches['serial_no'].apply(lambda x: f'https://tsdr.uspto.gov/#caseNumber={x}&caseSearchType=US_APPLICATION&caseType=DEFAULT&searchType=statusSearch')
@@ -70,12 +69,18 @@ def main():
 			# Return df
 			st.dataframe(df_matches)
 
+			# spaCy similarity
+			top_hit = df_matches['wordmark'].iloc[0]
+			nlp_top_hit = nlp(top_hit)
+			spacy_score = nlp_top_hit.similarity(tokens)
+			st.write("The similarity of: ",clean_text, "to", top_hit, "is :", spacy_score)
+
 			if df_matches.shape[0] > 10:
 				st.write("InfringeMark recommends to NOT FILE for a trademark.\n There are over ", df_matches.shape[0]-1, "similar trademarks." )
 
 			elif df_matches.shape[0] < 10:
 				st.write("InfringeMark recommends to FILE for a trademark.\n There are less than 10 similar trademarks.")
-
+			
 
 	elif choice == "Similarity":
 		st.write("That feature hasn't been implemented yet.")
