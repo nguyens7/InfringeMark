@@ -129,6 +129,7 @@ dmypy.json
 .pyre/
 
 # Data
+.DS_Store
 Data.nosync/
 Data/
 .Rproj.user
