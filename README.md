@@ -7,7 +7,7 @@ Python web application to identify existing or similar trademarks to prevent tra
 
 ### NLP packages
 [spaCy](https://github.com/explosion/spaCy)  
-[jellyfish](https://github.com/jamesturk/jellyfish)
+[jellyfish](https://github.com/jamesturk/jellyfish)  
 [fuzzywuzzy](https://github.com/seatgeek/fuzzywuzzy)
 
 
