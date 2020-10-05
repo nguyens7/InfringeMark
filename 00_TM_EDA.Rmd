@@ -121,7 +121,6 @@ TM_casefiles <- read_csv("Data.nosync/combined_courtcase_TM.csv") %>%
   janitor::clean_names() %>% 
   filter(!is.na(mark_text))
 
-
 TM_casefiles %>% 
   count(type_code)
 
@@ -137,11 +136,8 @@ TM_opposition_casefiles <- TM_casefiles %>%
 
 TM_opposition_casefiles
 ```
-```{r}
-TM_clean <- read_csv("Data.nosync/TM_clean_soundex.csv") %>% 
-  select(-wordmark2)
 
-TM_clean %>% 
-  write_csv("Data.nosync/TM_clean_soundex.csv")
+```{r}
+read_csv("Data.nosync/TM_clean_soundex.csv")
 ```
 
