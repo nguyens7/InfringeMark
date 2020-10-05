@@ -1,6 +1,6 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output: 
 ---
 
 ```{r message=FALSE, warning=FALSE}
@@ -138,6 +138,7 @@ TM_opposition_casefiles
 ```
 
 ```{r}
-read_csv("Data.nosync/TM_clean_soundex.csv")
+read_csv("Data.nosync/TM_clean_soundex.csv") %>% 
+  filter(str_detect(wordmark, "frickin"))
 ```
 
