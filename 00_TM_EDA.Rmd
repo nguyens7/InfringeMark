@@ -123,19 +123,44 @@ TM_casefiles <- read_csv("Data.nosync/combined_courtcase_TM.csv") %>%
 
 TM_casefiles %>% 
   count(type_code)
-
-
-
-TM_casefiles %>% 
-  filter(type_code %in% c("CAN"))
 ```
+
+```{r}
+TM_cancelled_courtcases <- TM_casefiles %>% 
+  filter(type_code %in% c("CAN")) %>% 
+  select(number, type_code, filing_date,identifier, serial_number, registration_number,
+         mark_text) %>% 
+  mutate(mark_text = str_to_lower(mark_text)) %>% 
+  distinct(mark_text,.keep_all = TRUE)
+
+TM_cancelled_courtcases
+```
+
 ## Opposition cases
 ```{r}
-TM_opposition_casefiles <- TM_casefiles %>% 
-  filter(type_code == "OPP")
+TM_opposition_courtcases <- TM_casefiles %>% 
+  filter(type_code == "OPP") %>% 
+  select(number, type_code, filing_date,identifier, serial_number, registration_number,
+         mark_text) %>% 
+  mutate(mark_text = str_to_lower(mark_text)) %>% 
+  distinct(mark_text,.keep_all = TRUE)
 
-TM_opposition_casefiles
+TM_opposition_courtcases
 ```
+```{r}
+TM_extension_courtcases <- TM_casefiles %>% 
+  filter(type_code %in% c("EXT")) %>% 
+  select(number, type_code, filing_date,identifier, serial_number, registration_number,
+         mark_text) %>% 
+  mutate(mark_text = str_to_lower(mark_text)) %>% 
+  distinct(mark_text,.keep_all = TRUE)
+
+TM_extension_courtcases
+```
+```{r}
+```
+
+
 
 ```{r}
 read_csv("Data.nosync/TM_clean_soundex.csv") %>% 
