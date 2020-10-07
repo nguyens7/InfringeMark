@@ -19,6 +19,13 @@ files <- paste0(here::here(),"/",list.files("Data.nosync",
 files %>% 
 map(~read.csv(.x, nrows = 100))
 ```
+```{r}
+foo <- read_csv("Data.nosync/case_file.csv") %>% 
+  count(cfh_status_cd)
+
+foo
+
+```
 
 ```{r}
 Cleaned_df <- read_csv("Data.nosync/Trademarks_only.csv") %>% 
@@ -131,7 +138,8 @@ TM_cancelled_courtcases <- TM_casefiles %>%
   select(number, type_code, filing_date,identifier, serial_number, registration_number,
          mark_text) %>% 
   mutate(mark_text = str_to_lower(mark_text)) %>% 
-  distinct(mark_text,.keep_all = TRUE)
+  group_by(number) %>% 
+  summarize(count = n())
 
 TM_cancelled_courtcases
 ```
