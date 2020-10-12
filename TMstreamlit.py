@@ -18,12 +18,12 @@ from fuzzywuzzy import process
 import joblib
 
 #Featurizer packges
-
 import unidecode
 from fuzzywuzzy import fuzz
 import jellyfish
 from abydos.distance import (IterativeSubString, BISIM, DiscountedLevenshtein, Prefix, LCSstr, MLIPNS, Strcmp95,
-	MRA, Editex, SAPS, FlexMetric, JaroWinkler, HigueraMico, Sift4, Eudex, ALINE, PhoneticEditDistance)
+							MRA, Editex, SAPS, FlexMetric, JaroWinkler, HigueraMico, Sift4,
+							Eudex, ALINE, PhoneticEditDistance)
 from abydos.phonetic import PSHPSoundexFirst, Ainsworth
 from abydos.phones import *
 import re
@@ -33,21 +33,7 @@ from sklearn.preprocessing import MinMaxScaler
 def make_clickable(val):
     	return '<a href="{}">{}</a>'.format(val,val)
 
-# load Model For Gender Prediction
-TM_XGB_model = open("Data.nosync/TM_XGboost_classifier.pkl","rb")
-TM_clf = joblib.load(TM_XGB_model)
-
-	# Prediction
-def predict_TM_outcome(data):
-	result = TM_clf.predict(data)
-	pred_result = TM_clf.predict_proba(data)
-	best_pred_result = [np.max(x) for x in pred_result]
-	data['XGB_proba'] = result
-	data['XGB_predict'] = best_pred_result
-	return data
-
 # Featurizer
-
 pshp_soundex_first = PSHPSoundexFirst()
 pe = Ainsworth()	
 iss = IterativeSubString()
@@ -127,9 +113,23 @@ def featurize(df):
     
     return df
 
+# load Model For Gender Prediction
+TM_XGB_model = open("Data.nosync/TM_XGboost_classifier.pkl","rb")
+TM_clf = joblib.load(TM_XGB_model)
+
+# Prediction
+def predict_TM_outcome(data):
+	""""A function to predict the similarity of a given trademark"""
+	result = TM_clf.predict(data)
+	proba_result = TM_clf.predict_proba(data)
+	best_pred_result = [p[1] for p in proba_result]
+	data['XGB_predict'] = result
+	data['XGB_proba'] = best_pred_result
+	return data
+
 
 def main():
-	""""A NLP app to identify infringing trademarks using spaCy"""
+	""""A NLP app to identify infringing trademarks using a XGboost model"""
 
 	st.write("""
 	# InfringeMark app  
@@ -143,9 +143,15 @@ def main():
 	tokens = nlp(clean_text)
 	if st.button("Find Similar Trademarks"):
 
+		# Levenshtein fuzzy match
 		def get_ratio(row):
 			    name = row['wordmark']
 			    return fuzz.token_sort_ratio(name, clean_text)
+
+		# XGBoost
+		# def XGB_ratio(row):
+		# 	    name = row['wordmark']
+		# 	    return fuzz.token_sort_ratio(name, clean_text)
 			# spaCy tokens
 		# spacy_streamlit.visualize_tokens(tokens)
 
@@ -164,11 +170,11 @@ def main():
 		st.dataframe(df_matches)
 
 		# spaCy similarity
-		top_hit = df_matches['wordmark'].iloc[0]
-		nlp_top_hit = nlp(top_hit)
-		spacy_score = nlp_top_hit.similarity(tokens)
-		spacy_score = round(spacy_score, -3)
-		st.write("The similarity of: ",clean_text, "to", top_hit, "is :", spacy_score)
+		# top_hit = df_matches['wordmark'].iloc[0]
+		# nlp_top_hit = nlp(top_hit)
+		# spacy_score = nlp_top_hit.similarity(tokens)
+		# spacy_score = round(spacy_score, -3)
+		# st.write("The similarity of: ",clean_text, "to", top_hit, "is :", spacy_score)
 
 		if df_matches.shape[0] > 10:
 			st.write("InfringeMark recommends to NOT FILE for a trademark.\n There are over ", df_matches.shape[0]-1, "similar trademarks." )
