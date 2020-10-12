@@ -1,6 +1,7 @@
 # Core Pkgs
 import pandas as pd
 import streamlit as st
+import numpy as np
 
 # NLP Pkgs
 import jellyfish
@@ -21,12 +22,9 @@ import joblib
 import unidecode
 from fuzzywuzzy import fuzz
 import jellyfish
-
 from abydos.distance import (IterativeSubString, BISIM, DiscountedLevenshtein, Prefix, LCSstr, MLIPNS, Strcmp95,
 	MRA, Editex, SAPS, FlexMetric, JaroWinkler, HigueraMico, Sift4, Eudex, ALINE, PhoneticEditDistance)
-
 from abydos.phonetic import PSHPSoundexFirst, Ainsworth
-
 from abydos.phones import *
 import re
 from tqdm import tqdm
@@ -36,13 +34,16 @@ def make_clickable(val):
     	return '<a href="{}">{}</a>'.format(val,val)
 
 # load Model For Gender Prediction
-TM_GBC_model = open("Data.nosync/TM_Gradient_boost_base_model.pkl","rb")
-TM_clf = joblib.load(TM_GBC_model)
+TM_XGB_model = open("Data.nosync/TM_XGboost_classifier.pkl","rb")
+TM_clf = joblib.load(TM_XGB_model)
 
 	# Prediction
 def predict_TM_outcome(data):
 	result = TM_clf.predict(data)
-	data['GBC_predict'] = result
+	pred_result = TM_clf.predict_proba(data)
+	best_pred_result = [np.max(x) for x in pred_result]
+	data['XGB_proba'] = result
+	data['XGB_predict'] = best_pred_result
 	return data
 
 # Featurizer
@@ -73,6 +74,15 @@ algo_names = ['iterativesubstring', 'bisim', 'discountedlevenshtein', 'prefix', 
           'editex', 'saps', 'flexmetric', 'jaro', 'higueramico', 'sift4', 'eudex', 'aline',
           'phoneticeditdistance']
 
+def sum_ipa(name_a, name_b):
+    feat1 = ipa_to_features(pe.encode(name_a))
+    feat2 = ipa_to_features(pe.encode(name_b))
+    if len(feat1) <= 1:
+        score = sum(cmp_features(f1, f2) for f1, f2 in zip(feat1, feat2))/1
+    else:    
+        score = sum(cmp_features(f1, f2) for f1, f2 in zip(feat1, feat2))/len(feat1)
+    return score
+
 
 def featurize(df):
     if len(df.columns)==3:
@@ -92,7 +102,7 @@ def featurize(df):
     df['tkn_sort'] = df.apply(lambda row: fuzz.token_sort_ratio(row.TM_A,row.TM_B), axis=1)
     df['tkn_set'] = df.apply(lambda row: fuzz.token_set_ratio(row.TM_A,row.TM_B), axis=1)
     
-	# df['sum_ipa'] = df.apply(lambda row: sum_ipa(row.TM_A,row.TM_B), axis=1)
+    df['sum_ipa'] = df.apply(lambda row: sum_ipa(row.TM_A,row.TM_B), axis=1)
     
     # Jellyfish levenshtein
     df['levenshtein']= df.apply(lambda row: jellyfish.levenshtein_distance(row.TM_A,row.TM_B), axis=1)
@@ -113,9 +123,9 @@ def featurize(df):
     
     for i, algo in enumerate(algos):
             df[algo_names[i]] = df.apply(lambda row: algo.sim(row.TM_A, row.TM_B), axis=1)
+
     
     return df
-
 
 
 def main():
@@ -124,18 +134,6 @@ def main():
 	st.write("""
 	# InfringeMark app  
 	A web application to identify potential infringing trademarks""")
-
-# Add a selectbox to the sidebar:
-# option = add_selectbox = st.sidebar.selectbox(
-#     'How do you want your wordmark to be evaluated?',
-#     ('Levenshtein', 'Similarity', 'Phoneme')
-#  )
-
-# Add a slider to the sidebar:
-# yr_range = add_slider = st.sidebar.slider(
-#     'Select a date range',
-#     1900, 2020, (1950, 2000)
-# )
 
 	# Streamlit App
 	nlp = spacy.load("en_core_web_lg")
@@ -149,7 +147,7 @@ def main():
 			    name = row['wordmark']
 			    return fuzz.token_sort_ratio(name, clean_text)
 			# spaCy tokens
-		spacy_streamlit.visualize_tokens(tokens)
+		# spacy_streamlit.visualize_tokens(tokens)
 
 		# Import TM data
 		df = pd.read_csv("Data.nosync/TM_clean_soundex.csv", index_col = False) # nrows = 1e6
