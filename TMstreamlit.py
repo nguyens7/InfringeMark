@@ -167,7 +167,7 @@ def main():
 		top_hit = df_matches['wordmark'].iloc[0]
 		nlp_top_hit = nlp(top_hit)
 		spacy_score = nlp_top_hit.similarity(tokens)
-		# spacy_score = round(spacy_score, -3)
+		spacy_score = round(spacy_score, -3)
 		st.write("The similarity of: ",clean_text, "to", top_hit, "is :", spacy_score)
 
 		if df_matches.shape[0] > 10:
