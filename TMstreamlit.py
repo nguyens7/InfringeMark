@@ -9,10 +9,10 @@ import spacy
 import spacy_streamlit 
 from spacy_streamlit import visualize_textcat
 
-from fuzzywuzzy import fuzz
-from fuzzywuzzy import process
-# from rapidfuzz import fuzz
-# from rapidfuzz import process
+# from fuzzywuzzy import fuzz
+# from fuzzywuzzy import process
+from rapidfuzz import fuzz
+from rapidfuzz import process
 
 # Model pkg
 import joblib
@@ -141,13 +141,8 @@ def main():
 		if len(clean_text) < 3:
 			st.write("Please use a Trademark longer than 3 characters.")
 
-	else:
+		else:
 			st.write("Looking for Trademarks similar to: ", raw_text, ".")
-
-			# Levenshtein fuzzy match
-			def get_ratio(row):
-				    name = row['wordmark']
-				    return fuzz.token_sort_ratio(name, clean_text)
 
 			# XGBoost
 			# def XGB_ratio(row):
@@ -167,8 +162,13 @@ def main():
 			df_small = df[df['wordmark'].str.contains(combo, na = False)]
 			df = df_small
 
+			# Levenshtein fuzzy match
+			def get_ratio(row):
+				    name = row['wordmark']
+				    return fuzz.token_sort_ratio(clean_text, name)
+
 			# Matching
-			# df_matches = df[df.apply(get_ratio, axis = 1) ] # > 70
+			df_matches = df[df.apply(get_ratio, axis = 1) > 10] 
 			# df_matches['sim_score'] = df.apply(get_ratio, axis = 1)
 			# df_matches_sorted = df_matches.sort_values(by = 'sim_score', ascending = False)
 
@@ -199,7 +199,7 @@ def main():
 			# df_GB = pd.concat([df_GB, predict_score], axis=1, sort=False)
 
 			# Return df
-			st.dataframe(df)
+			st.dataframe(df_matches)
 
 
 if __name__ == '__main__':
