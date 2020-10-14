@@ -19,22 +19,24 @@ files <- paste0(here::here(),"/",list.files("Data.nosync",
 files %>% 
 map(~read.csv(.x, nrows = 100))
 ```
+
 ```{r}
 foo <- read_csv("Data.nosync/case_file.csv") %>% 
-  count(cfh_status_cd)
+
 
 foo
+  
 ```
 
 ```{r}
 Cleaned_df <- read_csv("Data.nosync/Trademarks_only.csv") %>% 
-  filter(str_detect(statement_text,"\"*\"")) %>% 
+  filter(str_detect(statement_text,"\"*\""))  %>%
   mutate(wordmark = str_extract(statement_text, "\"(.*?)\""),
          clean_wordmark = str_remove_all(wordmark, "\"|\\.|,"),
          wordmark_only = str_remove_all(clean_wordmark,"[[:punct:]]") %>%
            str_to_lower()
-         ) %>% 
-  filter(str_length(wordmark_only) > 2)
+         ) %>%
+  filter(str_length(clean_wordmark) > 2)
 
 Cleaned_df
 ```
@@ -42,12 +44,11 @@ Cleaned_df
 
 ```{r}
 TM_clean <- Cleaned_df %>%
-  select(wordmark = wordmark_only, serial_no)
+  select(wordmark = clean_wordmark, serial_no)
 
-TM_clean 
 
 # write_csv(TM_clean, "Data.nosync/TM_clean.csv")
-  
+
 ```
 
 ```{r}

@@ -153,12 +153,11 @@ def main():
 
 			# Import TM data
 			df = pd.read_csv("Data.nosync/TM_clean_soundex.csv", index_col = False) # nrows = 1e6
-
+			df['wordmark'] = df['wordmark'].str.lower() 
 			# Filter to make df smaller
 			first_char = clean_text[0]
 			last_char = clean_text[-6:]
 			combo = '^' + first_char + '|' + last_char + '$'
-			# combo = last_char + '$'
 			df_small = df[df['wordmark'].str.contains(combo, na = False)]
 			df = df_small
 
@@ -168,8 +167,8 @@ def main():
 				    return fuzz.token_sort_ratio(clean_text, name)
 
 			# Matching
-			df_matches = df[df.apply(get_ratio, axis = 1) > 10] 
-			# df_matches['sim_score'] = df.apply(get_ratio, axis = 1)
+			df_matches = df[df.apply(get_ratio, axis = 1) > 70] 
+			df_matches['sim_score'] = df.apply(get_ratio, axis = 1)
 			# df_matches_sorted = df_matches.sort_values(by = 'sim_score', ascending = False)
 
 			# # Return df
@@ -190,16 +189,18 @@ def main():
 			# 	st.write("InfringeMark recommends to FILE for a trademark.\n There are less than 10 similar trademarks.")
 
 			# Gradient Boost df
-			# df_GB = df_matches[['wordmark']]
-			# df_GB['Input'] = clean_text
-			# df_GB = featurize(df_GB)
-			# df_GB_features = df_GB.drop(['a', 'b', 'TM_A', 'TM_B'],1)
-			# predict_score = predict_TM_outcome(df_GB_features)
-			# predict_score = predict_score[['XGB_proba', 'XGB_predict']]
-			# df_GB = pd.concat([df_GB, predict_score], axis=1, sort=False)
+			df_GB = df_matches[['wordmark']]
+			df_GB['Input'] = clean_text
+			df_GB = featurize(df_GB)
+			df_GB_features = df_GB.drop(['a', 'b', 'TM_A', 'TM_B'],1)
+			df_GB_TM = df_GB[['a', 'b']]
+			predict_score = predict_TM_outcome(df_GB_features)
+			predict_score = predict_score[['XGB_proba', 'XGB_predict']]
+			df_GB = pd.concat([df_GB_TM, predict_score], axis=1, sort=False)
+			df_GB = df_GB.sort_values(by = 'XGB_proba', ascending = False)
 
 			# Return df
-			st.dataframe(df_matches)
+			st.dataframe(df_GB)
 
 
 if __name__ == '__main__':
