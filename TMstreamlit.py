@@ -30,9 +30,6 @@ import re
 from tqdm import tqdm
 from sklearn.preprocessing import MinMaxScaler
 
-def make_clickable(val):
-    	return '<a href="{}">{}</a>'.format(val,val)
-
 # Featurizer
 pshp_soundex_first = PSHPSoundexFirst()
 pe = Ainsworth()	
@@ -82,7 +79,6 @@ def featurize(df):
         '[^a-zA-Z]+', '', unidecode.unidecode(row['a']).lower()), axis=1)
     df['TM_B'] = df.apply(lambda row: re.sub(
         '[^a-zA-Z]+', '', unidecode.unidecode(row['b']).lower()), axis=1)
-    
 
     df['partial'] = df.apply(lambda row: fuzz.partial_ratio(row.TM_A,row.TM_B), axis=1)
     df['tkn_sort'] = df.apply(lambda row: fuzz.token_sort_ratio(row.TM_A,row.TM_B), axis=1)
@@ -109,7 +105,6 @@ def featurize(df):
     
     for i, algo in enumerate(algos):
             df[algo_names[i]] = df.apply(lambda row: algo.sim(row.TM_A, row.TM_B), axis=1)
-
     
     return df
 
@@ -143,55 +138,68 @@ def main():
 	tokens = nlp(clean_text)
 	if st.button("Find Similar Trademarks"):
 
-		# Levenshtein fuzzy match
-		def get_ratio(row):
-			    name = row['wordmark']
-			    return fuzz.token_sort_ratio(name, clean_text)
+		if len(clean_text) < 3:
+			st.write("Please use a Trademark longer than 3 characters.")
 
-		# XGBoost
-		# def XGB_ratio(row):
-		# 	    name = row['wordmark']
-		# 	    return fuzz.token_sort_ratio(name, clean_text)
-			# spaCy tokens
-		# spacy_streamlit.visualize_tokens(tokens)
+	else:
+			st.write("Looking for Trademarks similar to: ", raw_text, ".")
 
-		# Import TM data
-		df = pd.read_csv("Data.nosync/TM_clean_soundex.csv", index_col = False) # nrows = 1e6
-		df_matches = df[df.apply(get_ratio, axis = 1) > 70]
-		df_matches['sim_score'] = df.apply(get_ratio, axis = 1)
-		df_matches = df_matches.sort_values(by = 'sim_score', ascending = False)
+			# Levenshtein fuzzy match
+			def get_ratio(row):
+				    name = row['wordmark']
+				    return fuzz.token_sort_ratio(name, clean_text)
 
-		# Add urls
-		# df_matches['url'] = df_matches['serial_no'].apply(lambda x: f'https://tsdr.uspto.gov/#caseNumber={x}&caseSearchType=US_APPLICATION&caseType=DEFAULT&searchType=statusSearch')
+			# XGBoost
+			# def XGB_ratio(row):
+			# 	    name = row['wordmark']
+			# 	    return fuzz.token_sort_ratio(name, clean_text)
+				# spaCy tokens
+			# spacy_streamlit.visualize_tokens(tokens)
 
-		# df.matches = df_matches.style.format(make_clickable)
+			# Import TM data
+			df = pd.read_csv("Data.nosync/TM_clean_soundex.csv", index_col = False) # nrows = 1e6
 
-		# Return df
-		st.dataframe(df_matches)
+			# Filter to make df smaller
+			first_char = clean_text[0]
+			last_char = clean_text[-6:]
+			combo = '^' + first_char + '|' + last_char + '$'
+			# combo = last_char + '$'
+			df_small = df[df['wordmark'].str.contains(combo, na = False)]
+			df = df_small
 
-		# spaCy similarity
-		# top_hit = df_matches['wordmark'].iloc[0]
-		# nlp_top_hit = nlp(top_hit)
-		# spacy_score = nlp_top_hit.similarity(tokens)
-		# spacy_score = round(spacy_score, -3)
-		# st.write("The similarity of: ",clean_text, "to", top_hit, "is :", spacy_score)
+			# Matching
+			# df_matches = df[df.apply(get_ratio, axis = 1) ] # > 70
+			# df_matches['sim_score'] = df.apply(get_ratio, axis = 1)
+			# df_matches_sorted = df_matches.sort_values(by = 'sim_score', ascending = False)
 
-		if df_matches.shape[0] > 10:
-			st.write("InfringeMark recommends to NOT FILE for a trademark.\n There are over ", df_matches.shape[0]-1, "similar trademarks." )
+			# # Return df
+			# st.dataframe(df_matches_sorted)
 
-		elif df_matches.shape[0] < 10:
-			st.write("InfringeMark recommends to FILE for a trademark.\n There are less than 10 similar trademarks.")
 
-		# Gradient Boost df
-		df_GB = df_matches[['wordmark']]
-		df_GB['Input'] = clean_text
-		df_GB = featurize(df_GB)
-		df_GB_features = df_GB.drop(['a', 'b', 'TM_A', 'TM_B'],1)
-		predict_score = predict_TM_outcome(df_GB_features)
+			# spaCy similarity
+			# top_hit = df_matches['wordmark'].iloc[0]
+			# nlp_top_hit = nlp(top_hit)
+			# spacy_score = nlp_top_hit.similarity(tokens)
+			# spacy_score = round(spacy_score, -3)
+			# st.write("The similarity of: ",clean_text, "to", top_hit, "is :", spacy_score)
 
-		# Return df
-		st.dataframe(df_GB)
-		st.dataframe(predict_score)
+			# if df_matches.shape[0] > 10:
+			# 	st.write("InfringeMark recommends to NOT FILE for a trademark.\n There are over ", df_matches.shape[0]-1, "similar trademarks." )
+
+			# elif df_matches.shape[0] < 10:
+			# 	st.write("InfringeMark recommends to FILE for a trademark.\n There are less than 10 similar trademarks.")
+
+			# Gradient Boost df
+			# df_GB = df_matches[['wordmark']]
+			# df_GB['Input'] = clean_text
+			# df_GB = featurize(df_GB)
+			# df_GB_features = df_GB.drop(['a', 'b', 'TM_A', 'TM_B'],1)
+			# predict_score = predict_TM_outcome(df_GB_features)
+			# predict_score = predict_score[['XGB_proba', 'XGB_predict']]
+			# df_GB = pd.concat([df_GB, predict_score], axis=1, sort=False)
+
+			# Return df
+			st.dataframe(df)
 
 
 if __name__ == '__main__':

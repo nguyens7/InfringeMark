@@ -24,7 +24,6 @@ foo <- read_csv("Data.nosync/case_file.csv") %>%
   count(cfh_status_cd)
 
 foo
-
 ```
 
 ```{r}
@@ -34,7 +33,8 @@ Cleaned_df <- read_csv("Data.nosync/Trademarks_only.csv") %>%
          clean_wordmark = str_remove_all(wordmark, "\"|\\.|,"),
          wordmark_only = str_remove_all(clean_wordmark,"[[:punct:]]") %>%
            str_to_lower()
-         )
+         ) %>% 
+  filter(str_length(wordmark_only) > 2)
 
 Cleaned_df
 ```
