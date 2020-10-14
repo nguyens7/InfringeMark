@@ -144,16 +144,14 @@ def main():
 		else:
 			st.write("Looking for Trademarks similar to: ", raw_text, ".")
 
-			# XGBoost
-			# def XGB_ratio(row):
-			# 	    name = row['wordmark']
-			# 	    return fuzz.token_sort_ratio(name, clean_text)
-				# spaCy tokens
+			# spaCy tokens
 			# spacy_streamlit.visualize_tokens(tokens)
 
 			# Import TM data
 			df = pd.read_csv("Data.nosync/TM_clean_soundex.csv", index_col = False) # nrows = 1e6
 			df['wordmark'] = df['wordmark'].str.lower() 
+			df = df.drop_duplicates(subset=['wordmark'])
+
 			# Filter to make df smaller
 			first_char = clean_text[0]
 			last_char = clean_text[-6:]
@@ -167,9 +165,8 @@ def main():
 				    return fuzz.token_sort_ratio(clean_text, name)
 
 			# Matching
-			df_matches = df[df.apply(get_ratio, axis = 1) > 70] 
+			df_matches = df[df.apply(get_ratio, axis = 1) > 60] 
 			df_matches['sim_score'] = df.apply(get_ratio, axis = 1)
-			# df_matches_sorted = df_matches.sort_values(by = 'sim_score', ascending = False)
 
 			# # Return df
 			# st.dataframe(df_matches_sorted)
@@ -182,12 +179,6 @@ def main():
 			# spacy_score = round(spacy_score, -3)
 			# st.write("The similarity of: ",clean_text, "to", top_hit, "is :", spacy_score)
 
-			# if df_matches.shape[0] > 10:
-			# 	st.write("InfringeMark recommends to NOT FILE for a trademark.\n There are over ", df_matches.shape[0]-1, "similar trademarks." )
-
-			# elif df_matches.shape[0] < 10:
-			# 	st.write("InfringeMark recommends to FILE for a trademark.\n There are less than 10 similar trademarks.")
-
 			# Gradient Boost df
 			df_GB = df_matches[['wordmark']]
 			df_GB['Input'] = clean_text
@@ -197,11 +188,19 @@ def main():
 			predict_score = predict_TM_outcome(df_GB_features)
 			predict_score = predict_score[['XGB_proba', 'XGB_predict']]
 			df_GB = pd.concat([df_GB_TM, predict_score], axis=1, sort=False)
-			df_GB = df_GB.sort_values(by = 'XGB_proba', ascending = False)
+			df_GB_final = df_GB.sort_values(by='XGB_proba', ascending=False)
+			count = len(df_GB_final[df_GB_final['XGB_proba'] > 0.8])
+			orig_count = len(df_GB_final)
 
 			# Return df
-			st.dataframe(df_GB)
+			st.dataframe(df_GB_final)
 
+			# InfringeMark recommendation
+			if count > 10:
+				st.write("InfringeMark recommends to NOT FILE for a trademark.\n There are over ", count-1, "similar trademarks." )
+
+			elif count < 10:
+				st.write("InfringeMark recommends to FILE for a trademark.\n There are less than 10 similar trademarks.")
 
 if __name__ == '__main__':
 	main()
