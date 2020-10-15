@@ -2,15 +2,13 @@
 import pandas as pd
 import streamlit as st
 import numpy as np
+import PIL
 
 # NLP Pkgs
 import jellyfish
 import spacy
 import spacy_streamlit 
 from spacy_streamlit import visualize_textcat
-
-# from fuzzywuzzy import fuzz
-# from fuzzywuzzy import process
 from rapidfuzz import fuzz
 from rapidfuzz import process
 
@@ -122,14 +120,18 @@ def predict_TM_outcome(data):
 	data['XGB_proba'] = best_pred_result
 	return data
 
-
 def main():
 	""""A NLP app to identify infringing trademarks using a XGboost model"""
 
+	# Header
+	logo = PIL.Image.open('Figs/InfringeMark_logo.png')
+	st.image(logo, width=700, output_format='PNG') # logo
+
 	st.write("""
-	# InfringeMark app  
+	# The Unofficial USPTO Trademark Search  
 	A web application to identify potential infringing trademarks""")
 
+	# https://upload.wikimedia.org/wikipedia/commons/7/75/Seal_of_the_United_States_Patent_and_Trademark_Office.svg
 	# Streamlit App
 	nlp = spacy.load("en_core_web_lg")
 	raw_text = st.text_area("","Enter your trademark here")
@@ -188,12 +190,13 @@ def main():
 			predict_score = predict_TM_outcome(df_GB_features)
 			predict_score = predict_score[['XGB_proba', 'XGB_predict']]
 			df_GB = pd.concat([df_GB_TM, predict_score], axis=1, sort=False)
-			df_GB_final = df_GB.sort_values(by='XGB_proba', ascending=False)
-			count = len(df_GB_final[df_GB_final['XGB_proba'] > 0.8])
-			orig_count = len(df_GB_final)
+			# df_GB = pd.concat([df_GB, predict_score.drop(['XGB_proba', 'XGB_predict'],1)], axis=1, sort=False)
+			df_GB = df_GB.sort_values(by='XGB_proba', ascending=False)
+			df_GB['XGB_proba'] = round(df_GB['XGB_proba'], 3)
+			count = len(df_GB[df_GB['XGB_proba'] > 0.8])
 
 			# Return df
-			st.dataframe(df_GB_final)
+			st.dataframe(df_GB)
 
 			# InfringeMark recommendation
 			if count > 10:
