@@ -191,23 +191,21 @@ def main():
 			df_GB = pd.concat([df_GB_TM, predict_score], axis=1, sort=False)
 			predict_features = predict_score.drop(['XGB_proba', 'XGB_predict'],1)
 			# df_GB = pd.concat([df_GB, df_GB_features], axis=1, sort=False)
-			df_GB = df_GB.sort_values(by='XGB_proba', ascending=False)
-			df_GB['XGB_proba'] = round(df_GB['XGB_proba'], 3)
+			df_GB_result = df_GB.sort_values(by='XGB_proba', ascending=False)
+			df_GB_result['XGB_proba'] = round(df_GB_result['XGB_proba'], 3)
 			count = len(df_GB[df_GB['XGB_proba'] > 0.8])
 
 			# Return df
-			st.dataframe(df_GB)
+			st.dataframe(df_GB_result)
+			st.write(count)
 			# st.dataframe(predict_features)
 
 			# InfringeMark recommendation
 			if count > 10:
-				st.write("InfringeMark recommends to NOT FILE for a trademark.\n There are over ", count-1, "similar trademarks." )
+				st.write("InfringeMark recommends to NOT FILE ",raw_text, "for a trademark.\n There are over ", count-1, "similar trademarks." )
 
 			elif count < 10:
 				st.write("InfringeMark recommends to FILE for a trademark.\n There are less than 10 similar trademarks.")
-
-
-
 
 	# Footer
 	USPTO_logo = PIL.Image.open('Figs/USPTO_Logo.jpg')
