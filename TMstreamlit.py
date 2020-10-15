@@ -128,7 +128,7 @@ def main():
 	st.image(logo, width=700, output_format='PNG') # logo
 
 	st.write("""
-	# The Unofficial USPTO Trademark Search  
+	# An Unofficial USPTO Trademark Search  
 	A web application to identify potential infringing trademarks""")
 
 	# https://upload.wikimedia.org/wikipedia/commons/7/75/Seal_of_the_United_States_Patent_and_Trademark_Office.svg
@@ -173,7 +173,6 @@ def main():
 			# # Return df
 			# st.dataframe(df_matches_sorted)
 
-
 			# spaCy similarity
 			# top_hit = df_matches['wordmark'].iloc[0]
 			# nlp_top_hit = nlp(top_hit)
@@ -190,13 +189,15 @@ def main():
 			predict_score = predict_TM_outcome(df_GB_features)
 			predict_score = predict_score[['XGB_proba', 'XGB_predict']]
 			df_GB = pd.concat([df_GB_TM, predict_score], axis=1, sort=False)
-			# df_GB = pd.concat([df_GB, predict_score.drop(['XGB_proba', 'XGB_predict'],1)], axis=1, sort=False)
+			predict_features = predict_score.drop(['XGB_proba', 'XGB_predict'],1)
+			# df_GB = pd.concat([df_GB, df_GB_features], axis=1, sort=False)
 			df_GB = df_GB.sort_values(by='XGB_proba', ascending=False)
 			df_GB['XGB_proba'] = round(df_GB['XGB_proba'], 3)
 			count = len(df_GB[df_GB['XGB_proba'] > 0.8])
 
 			# Return df
 			st.dataframe(df_GB)
+			# st.dataframe(predict_features)
 
 			# InfringeMark recommendation
 			if count > 10:
@@ -204,6 +205,18 @@ def main():
 
 			elif count < 10:
 				st.write("InfringeMark recommends to FILE for a trademark.\n There are less than 10 similar trademarks.")
+
+
+
+
+	# Footer
+	USPTO_logo = PIL.Image.open('Figs/USPTO_Logo.jpg')
+	st.image(USPTO_logo, width=250, output_format='JPG') # logo
+
+	st.write(""" The information provided by this web app does not, and is not intended to, constitute legal advice;
+		instead, all information provided by this app is for general informational purposes only.  
+		The code behind this app can be accessed on [Github](https://github.com/nguyens7/InfringeMark).""")
+
 
 if __name__ == '__main__':
 	main()
