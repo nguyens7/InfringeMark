@@ -149,16 +149,13 @@ def main():
 
 			# Import TM data
 			df = pd.read_csv("Data.nosync/TM_clean.csv", index_col = False)
-			# df['wordmark'] = df['wordmark'].str.lower() 
-			# df = df.drop_duplicates(subset=['wordmark'])
-
 
 			# Filter to make df smaller
 			first_char = clean_text[0]
 			last_char = clean_text[-6:]
 			combo = '^' + first_char + '|' + last_char + '$'
 			df_small = df[df['wordmark'].str.contains(combo, na = False)]
-			df_foo = df_small
+			df = df_small
 
 			# Levenshtein fuzzy match
 			def get_ratio(row):
@@ -166,7 +163,7 @@ def main():
 				    return fuzz.token_sort_ratio(clean_text, name)
 
 			# Matching
-			df_matches = df[df.apply(get_ratio, axis = 1) > 70] 
+			df_matches = df[df.apply(get_ratio, axis = 1) > 60] 
 			df_matches['sim_score'] = df.apply(get_ratio, axis = 1)
 
 			# # Return df
@@ -191,8 +188,8 @@ def main():
 			predict_features = predict_score.drop(['XGB_proba', 'XGB_predict'],1)
 			# df_GB = pd.concat([df_GB, df_GB_features], axis=1, sort=False)
 			df_GB_result = df_GB.sort_values(by='XGB_proba', ascending=False)
-			df_GB_result['XGB_proba'] = round(df_GB_result['XGB_proba'], 3)
-			count = len(df_GB[df_GB['XGB_proba'] > 0.5])
+			df_GB_result['XGB_proba'] = round(df_GB_result['XGB_proba'], 2)
+			count = len(df_GB[df_GB['XGB_proba'] > 0.65])
 
 			# Return df
 			st.dataframe(df_GB_result)
