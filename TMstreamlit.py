@@ -25,7 +25,6 @@ from abydos.distance import (IterativeSubString, BISIM, DiscountedLevenshtein, P
 from abydos.phonetic import PSHPSoundexFirst, Ainsworth
 from abydos.phones import *
 import re
-from tqdm import tqdm
 from sklearn.preprocessing import MinMaxScaler
 
 # Featurizer
@@ -131,7 +130,6 @@ def main():
 	# An Unofficial USPTO Trademark Search  
 	A web application to identify potential infringing trademarks""")
 
-	# https://upload.wikimedia.org/wikipedia/commons/7/75/Seal_of_the_United_States_Patent_and_Trademark_Office.svg
 	# Streamlit App
 	nlp = spacy.load("en_core_web_lg")
 	raw_text = st.text_area("","Enter your trademark here")
@@ -150,16 +148,17 @@ def main():
 			# spacy_streamlit.visualize_tokens(tokens)
 
 			# Import TM data
-			df = pd.read_csv("Data.nosync/TM_clean_soundex.csv", index_col = False) # nrows = 1e6
-			df['wordmark'] = df['wordmark'].str.lower() 
-			df = df.drop_duplicates(subset=['wordmark'])
+			df = pd.read_csv("Data.nosync/TM_clean.csv", index_col = False)
+			# df['wordmark'] = df['wordmark'].str.lower() 
+			# df = df.drop_duplicates(subset=['wordmark'])
+
 
 			# Filter to make df smaller
 			first_char = clean_text[0]
 			last_char = clean_text[-6:]
 			combo = '^' + first_char + '|' + last_char + '$'
 			df_small = df[df['wordmark'].str.contains(combo, na = False)]
-			df = df_small
+			df_foo = df_small
 
 			# Levenshtein fuzzy match
 			def get_ratio(row):
@@ -167,7 +166,7 @@ def main():
 				    return fuzz.token_sort_ratio(clean_text, name)
 
 			# Matching
-			df_matches = df[df.apply(get_ratio, axis = 1) > 60] 
+			df_matches = df[df.apply(get_ratio, axis = 1) > 70] 
 			df_matches['sim_score'] = df.apply(get_ratio, axis = 1)
 
 			# # Return df
@@ -193,25 +192,24 @@ def main():
 			# df_GB = pd.concat([df_GB, df_GB_features], axis=1, sort=False)
 			df_GB_result = df_GB.sort_values(by='XGB_proba', ascending=False)
 			df_GB_result['XGB_proba'] = round(df_GB_result['XGB_proba'], 3)
-			count = len(df_GB[df_GB['XGB_proba'] > 0.8])
+			count = len(df_GB[df_GB['XGB_proba'] > 0.5])
 
 			# Return df
 			st.dataframe(df_GB_result)
-			st.write(count)
-			# st.dataframe(predict_features)
 
 			# InfringeMark recommendation
 			if count > 10:
-				st.write("InfringeMark recommends to NOT FILE ",raw_text, "for a trademark.\n There are over ", count-1, "similar trademarks." )
+				st.write("InfringeMark recommends to NOT FILE \"",raw_text, "\" for a trademark.\n There are over ", count-1, "similar trademarks." )
 
 			elif count < 10:
-				st.write("InfringeMark recommends to FILE for a trademark.\n There are less than 10 similar trademarks.")
+				st.write("InfringeMark recommends to FILE \"" ,raw_text, "\" for a trademark.\n There are less than 10 similar trademarks.")
 
 	# Footer
 	USPTO_logo = PIL.Image.open('Figs/USPTO_Logo.jpg')
 	st.image(USPTO_logo, width=250, output_format='JPG') # logo
 
-	st.write(""" The information provided by this web app does not, and is not intended to, constitute legal advice;
+	# Disclaimer
+	st.write(""" **Disclaimer:** The information provided by this web app does not, and is not intended to, constitute legal advice;
 		instead, all information provided by this app is for general informational purposes only.  
 		The code behind this app can be accessed on [Github](https://github.com/nguyens7/InfringeMark).""")
 
