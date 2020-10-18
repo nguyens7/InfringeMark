@@ -6,9 +6,6 @@ import PIL
 
 # NLP Pkgs
 import jellyfish
-import spacy
-import spacy_streamlit 
-from spacy_streamlit import visualize_textcat
 from rapidfuzz import fuzz
 from rapidfuzz import process
 
@@ -17,8 +14,6 @@ import joblib
 
 #Featurizer packges
 import unidecode
-from fuzzywuzzy import fuzz
-import jellyfish
 from abydos.distance import (IterativeSubString, BISIM, DiscountedLevenshtein, Prefix, LCSstr, MLIPNS, Strcmp95,
 							MRA, Editex, SAPS, FlexMetric, JaroWinkler, HigueraMico, Sift4,
 							Eudex, ALINE, PhoneticEditDistance)
@@ -63,7 +58,6 @@ def sum_ipa(name_a, name_b):
         score = sum(cmp_features(f1, f2) for f1, f2 in zip(feat1, feat2))/len(feat1)
     return score
 
-
 def featurize(df):
     if len(df.columns)==3:
         df.columns=['a', 'b', 'target']
@@ -106,12 +100,11 @@ def featurize(df):
     return df
 
 # load Model For Gender Prediction
-TM_XGB_model = open("Data.nosync/TM_XGboost_classifier.pkl","rb")
+TM_XGB_model = open("model/TM_XGboost_classifier.pkl","rb")
 TM_clf = joblib.load(TM_XGB_model)
 
 # Prediction
 def predict_TM_outcome(data):
-	""""A function to predict the similarity of a given trademark"""
 	result = TM_clf.predict(data)
 	proba_result = TM_clf.predict_proba(data)
 	best_pred_result = [p[1] for p in proba_result]
@@ -120,7 +113,7 @@ def predict_TM_outcome(data):
 	return data
 
 def main():
-	""""A NLP app to identify infringing trademarks using a XGboost model"""
+	""""A NLP app to identify infringing trademarks using a XGBoost model"""
 
 	# Header
 	logo = PIL.Image.open('Figs/InfringeMark_logo.png')
@@ -144,9 +137,6 @@ def main():
 		else:
 			st.write("Looking for Trademarks similar to: ", raw_text, ".")
 
-			# spaCy tokens
-			# spacy_streamlit.visualize_tokens(tokens)
-
 			# Import TM data
 			df = pd.read_csv("https://infringemark.s3.us-east-2.amazonaws.com/TM_clean.csv", index_col = False)
 			# df = pd.read_csv("Data.nosync/TM_clean.csv", index_col = False) # Original
@@ -167,17 +157,7 @@ def main():
 			df_matches = df[df.apply(get_ratio, axis = 1) > 60] 
 			df_matches['sim_score'] = df.apply(get_ratio, axis = 1)
 
-			# # Return df
-			# st.dataframe(df_matches_sorted)
-
-			# spaCy similarity
-			# top_hit = df_matches['wordmark'].iloc[0]
-			# nlp_top_hit = nlp(top_hit)
-			# spacy_score = nlp_top_hit.similarity(tokens)
-			# spacy_score = round(spacy_score, -3)
-			# st.write("The similarity of: ",clean_text, "to", top_hit, "is :", spacy_score)
-
-			# Gradient Boost df
+			# XGBoost df
 			df_GB = df_matches[['wordmark']]
 			df_GB['Input'] = clean_text
 			df_GB = featurize(df_GB)
@@ -210,7 +190,6 @@ def main():
 	st.write(""" **Disclaimer:** The information provided by this web app does not, and is not intended to, constitute legal advice;
 		instead, all information provided by this app is for general informational purposes only.  
 		The code behind this app can be accessed on [Github](https://github.com/nguyens7/InfringeMark).""")
-
 
 if __name__ == '__main__':
 	main()
