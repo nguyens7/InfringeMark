@@ -1,11 +1,10 @@
-abydos==0.5.0
-Cython==0.29.21
-jellyfish==0.8.2
-joblib==0.16.0
-pandas==1.0.5
-PIL==7.2.0
-rapidfuzz==0.12.1
-scikit-learn==0.23.1
-streamlit==0.69.1
-unidecode
+abydos>=0.5.0
+jellyfish>=0.8.2
+joblib>=0.16.0
+pandas>=1.0.5
+PIL>=0.0.1
+rapidfuzz>=0.12.1
+scikit-learn>=0.23.1
+streamlit>=0.69.1
+unidecode >=0.0.1
 
