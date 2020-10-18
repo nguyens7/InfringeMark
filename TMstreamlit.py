@@ -182,8 +182,8 @@ def main():
 				st.write("InfringeMark recommends to FILE \"" ,raw_text, "\" for a trademark.\n There are less than 10 similar trademarks.")
 
 	# Footer
-	USPTO_logo = PIL.Image.open('Figs/USPTO_Logo.jpg')
-	st.image(USPTO_logo, width=250, output_format='JPG') # logo
+	# USPTO_logo = PIL.Image.open('Figs/USPTO_Logo.jpg')
+	# st.image(USPTO_logo, width=250, output_format='JPG') # logo
 
 	# Disclaimer
 	st.write(""" **Disclaimer:** The information provided by this web app does not, and is not intended to, constitute legal advice;
