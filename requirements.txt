@@ -9,3 +9,4 @@ streamlit==0.69.2
 Unidecode==1.1.1
 Pillow==8.0.0
 scikit_learn==0.23.2
+xgboost==1.2.0
