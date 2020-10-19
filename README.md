@@ -1,16 +1,18 @@
 # InfringeMark
 
-<img align="right" height="50" src="https://www.jing.fm/clipimg/full/64-643745_uspto-logo-united-states-patent-and-trademark-office.png">
-<img align="right" height="100" src="https://irishlegal.com/uploads/ukipo.png">
+A python web application to identify existing or similar trademarks based on string and phonetic similarity to prevent trademark infringement lawsuits.  
 
+![InfringeMark](https://media.giphy.com/media/LnIdaR0EbSl02qq0YL/giphy.gif)
 
-Python web application to identify existing or similar trademarks to prevent trademark infringement lawsuits.
+[You can try InfringeMark for yourself!](https://Infringemark.com)
 
+### How it works
+InfringeMark was made using historical USPTO and UK IPO court trademark court case data and uses an XGBoost model to analyze trademarks/strings across 26 features. The app finds similar trademarks that exist in the USPTO database and returns a recommendation to file or not file for a trademark.   
 
 ### NLP packages
-[spaCy](https://github.com/explosion/spaCy)  
+[abydos](https://github.com/chrislit/abydos)   
 [jellyfish](https://github.com/jamesturk/jellyfish)  
-[fuzzywuzzy](https://github.com/seatgeek/fuzzywuzzy)
+[rapidfuzz](https://maxbachmann.github.io/rapidfuzz/)
 
 
 
