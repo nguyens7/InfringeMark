@@ -2,7 +2,9 @@
 
 A python web application to identify existing or similar trademarks based on string and phonetic similarity to prevent trademark infringement lawsuits.  
 
-![InfringeMark](https://media.giphy.com/media/LnIdaR0EbSl02qq0YL/giphy.gif)
+<p align="center">
+  <img width="450" src="https://media.giphy.com/media/LnIdaR0EbSl02qq0YL/giphy.gif">
+</p>
 
 [You can try InfringeMark for yourself!](https://Infringemark.com)
 
