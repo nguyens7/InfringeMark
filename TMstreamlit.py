@@ -123,11 +123,9 @@ def main():
 	A web application to identify potential infringing trademarks""")
 
 	# Streamlit App
-	# nlp = spacy.load("en_core_web_lg")
 	raw_text = st.text_area("","Enter your trademark here")
 	clean_text = str.lower(raw_text)
 	nospace_clean_text = clean_text.replace(' ', '')
-	# tokens = nlp(clean_text)
 	if st.button("Find Similar Trademarks"):
 
 		if len(clean_text) < 3:
@@ -138,7 +136,6 @@ def main():
 
 			# Import TM data
 			df = pd.read_csv("https://infringemark.s3.us-east-2.amazonaws.com/TM_clean.csv", index_col = False)
-			# df = pd.read_csv("Data.nosync/TM_clean.csv", index_col = False) # Original
 
 			# Filter to make df smaller
 			first_char = clean_text[0]
