@@ -113,7 +113,6 @@ def predict_TM_outcome(data):
 
 def main():
 	""""A NLP app to identify infringing trademarks using a XGBoost model"""
-
 	# Header
 	logo = PIL.Image.open('Figs/InfringeMark_logo.png')
 	st.image(logo, width=700, output_format='PNG') # logo
@@ -163,7 +162,6 @@ def main():
 			predict_score = predict_score[['XGB_proba', 'XGB_predict']]
 			df_GB = pd.concat([df_GB_TM, predict_score], axis=1, sort=False)
 			predict_features = predict_score.drop(['XGB_proba', 'XGB_predict'],1)
-			# df_GB = pd.concat([df_GB, df_GB_features], axis=1, sort=False)
 			df_GB_result = df_GB.sort_values(by='XGB_proba', ascending=False)
 			df_GB_result['XGB_proba'] = round(df_GB_result['XGB_proba'], 2)
 			count = len(df_GB[df_GB['XGB_proba'] > 0.65])
