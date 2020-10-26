@@ -16,5 +16,6 @@ InfringeMark was made using historical USPTO and UK IPO court trademark court ca
 [jellyfish](https://github.com/jamesturk/jellyfish)  
 [rapidfuzz](https://maxbachmann.github.io/rapidfuzz/)
 
-
+**Disclaimer:** The information provided by this web app does not, and is not intended to, constitute legal advice;
+		instead, all information provided by this app is for general informational purposes only.
 
