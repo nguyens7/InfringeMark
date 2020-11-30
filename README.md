@@ -1,4 +1,4 @@
-# InfringeMark
+# InfringeMark [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/nguyens7/infringemark/TMstreamlit.py)
 
 A python web application to identify existing or similar trademarks based on string and phonetic similarity to prevent trademark infringement lawsuits.  
 
